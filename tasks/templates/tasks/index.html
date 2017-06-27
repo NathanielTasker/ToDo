@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>TASKS</title>
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'tasks/style.css' %}" />
+    </head>
+
+    <body>
+        <a href="{% url 'tasks:switch_display_completed_tasks' display_completed_tasks %}">
+            <input type="submit" value="{{ switch_text }}" class="button fixed_button">
+        </a>
+
+        <div class="wrapper align_center">
+            {% if error_message %}<p class="strong"><strong>{{ error_message }}</strong></p>{% endif %}
+            <form action="{% url 'tasks:add' %}" method="post">
+                {% csrf_token %}
+                <label for="task_text">
+                    Task
+                    <input type="text" class="margin_lr" style="width:240px;" name="task_text" />
+                </label>&thinsp;
+                <label for="deadline">
+                    Deadline (if any)
+                    <input type="datetime-local" class="margin_lr" name="deadline" />
+                </label>&ensp;
+                <input type="submit" value="Add" class="button">
+            </form>
+        </div>
+
+        <div class="wrapper">
+            {% if latest_task_list %}
+                <table id="task_list">
+                {% for task in latest_task_list %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'tasks:switch_finishing' task.id %}">
+                                <div class='button'>
+                                    {% if task.finishing == False %}
+                                        <input type="submit" value="" class="button button_white">
+                                    {% else %}
+                                        <input type="submit" value="✔" class="button">
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </td>
+
+
+                        <td>{{ task.task_text }}</td>
+
+
+                        <td>
+                            {% if task.deadline %}
+                                <img class="clock" src="{% static 'tasks/images/clock.png' %}">
+                                <span class="small_text{% if task.is_past_deadline %} strong{% endif %}">{{ task.deadline|date:'Y/n/d H:i' }}</span>
+                            {% else %}
+                            {% endif %}
+                        </td>
+
+
+                        <td>
+                            <a href="{% url 'tasks:edit' task.id %}">
+                                <img src="{% static 'tasks/images/edit.png' %}">
+                            </a>
+                        </td>
+
+
+                        <td>
+                            <a href="{% url 'tasks:delete' task.id %}" onclick="show_alert();">
+                                <img src="{% static 'tasks/images/trash.png' %}">
+                            </a>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </table>
+
+            {% else %}
+                <p>No tasks are available.</p>
+            {% endif %}
+
+        </div>
+
+    </body>
+
+
+    <script>
+        function show_alert() {
+           alert("Are you sure?");
+        }
+    </script>
+
+</html>
