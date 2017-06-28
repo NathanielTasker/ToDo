@@ -1,9 +1,8 @@
 import re
-import datetime
 from itertools import chain
 
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Count
@@ -47,7 +46,7 @@ def switch_display_completed_tasks(request, display_completed_tasks):
 def switch_finishing(request, task_id):
     ''' タスクに完了チェックを付ける/外す '''
     task = get_object_or_404(Task, pk=task_id)
-    if task.finishing == False:
+    if not task.finishing:
         task.finishing = True
         task.completion_date = timezone.now()
     else:
@@ -65,7 +64,7 @@ def add(request):
         if request.POST['deadline']:
             deadline = request.POST['deadline']
         else:
-            deadline = None            
+            deadline = None
 
         new_task = Task(task_text=task_text, pub_date=timezone.now(), deadline=deadline, finishing=False)
         new_task.save()
@@ -102,17 +101,10 @@ def apply_edit(request, task_id):
             return render(request, 'tasks/index.html', {
                 'error_message': "You didn't set task.",
                 })
-    else:
-        task_text = task.task_text
 
-    # 以下のif節がごちゃごちゃしている気がするので, 直したい
     if request.POST['deadline']:
         if request.POST['deadline'] != task.deadline:
             task.deadline = request.POST['deadline']
-        else:
-            deadline = task.deadline
-    else:
-        deadline = task.deadline
 
     task.save()
     return HttpResponseRedirect(reverse('tasks:index'))
